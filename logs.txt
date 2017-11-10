@@ -1,2 +1,8 @@
 ct.googleapis.com/pilot ssl
 sabre.ct.comodo.com ssl
+ctlog-gen2.api.venafi.com ssl
+ct.googleapis.com_rocketeer ssl
+ct.ws.symantec.com ssl
+ct.googleapis.com/submariner ssl
+ctlog.wosign.com ssl
+ct2.digicert-ct.com/log ssl

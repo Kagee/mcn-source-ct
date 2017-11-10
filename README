@@ -1,0 +1,4 @@
+1. build https://github.com/google/certificate-transparency per instructions
+2. Install ABSL: sudo pip2 install absl-py•
+3. build python protobuf bindings? in ct/protobuf/python using "python setup.py build"
+4. Set relevant paths in config.sh

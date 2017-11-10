@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 # Based on /ct/certificate-transparency/python/ct/client/tools/simple_scan.py
+import requests
+
+requests.packages.urllib3.disable_warnings()
+
 
 import os
 import sys
@@ -20,11 +24,8 @@ gflags.DEFINE_integer("startat", 0,
 gflags.DEFINE_string("output", None,
                      "Output directory to write certificates to.")
 gflags.DEFINE_string("log", None, "URL of log to scan")
-
-#import requests
-
-#requests.packages.urllib3.disable_warnings()
-
+gflags.DEFINE_boolean("secure", False,
+                      "Wether or not to verify HTTPS");
 
 def match(certificate, entry_type, extra_data, certificate_index):
     try:

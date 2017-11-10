@@ -1,0 +1,3 @@
+CT_PATH="$HOME/ct"
+STORAGE_PATH="$PWD/data"
+THREADS=8
