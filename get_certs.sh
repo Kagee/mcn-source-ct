@@ -17,6 +17,9 @@ echo "$LOGS" | while read LOGINFO; do
     if [ -d "${STORAGE_PATH}/${FOLDER}" ]; then
         COUNT=$(find "${STORAGE_PATH}/${FOLDER}" -name '*.der' | wc -l)
         LAST=$(ls -tr "${STORAGE_PATH}/${FOLDER}/" | grep -F '.der' | tail -1 | sed -e 's/cert_//' -e 's/\.der//')
+        if [ "x${LAST}" == "x" ]; then
+            LAST="0"
+        fi
         echo "COUNT: ${COUNT}, LAST: ${LAST}"
     else
         echo "Storage directory ${STORAGE_PATH}/${FOLDER} does not exist, no data downloaded"
