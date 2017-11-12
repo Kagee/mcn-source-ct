@@ -1,4 +1,8 @@
-Part of my MCN (make clean no)-project
+# mcn-source-ct
+
+Part of my MCN (make clean no)-project.
+
+Scripts for downloading and extracting .no domains from certificate transparency logs.
 
 1. build https://github.com/google/certificate-transparency per instructions
 2. Install ABSL: sudo pip2 install absl-py•
