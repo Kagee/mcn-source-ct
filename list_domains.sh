@@ -12,7 +12,7 @@ if [ ! -e "$DOMAINS" ] || [ "x$1" = "x--update" ]; then
     fi
     echo "INFO: Extracting valid .no domains. This may take a LONG time." 1>&2
     find "${STORAGE_PATH}/" -type f -exec openssl x509 -inform der -in "{}" -text \; | \
-    ${MCN_TOOLS}/default_extract > "$DOMAINS"
+    grep -F '.no' | ${MCN_TOOLS}/default_extract > "$DOMAINS"
 fi
 if [ -e "$DOMAINS" ]; then
     LIST_AGE="$(stat --format '%Y' "$DOMAINS")"
