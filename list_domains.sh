@@ -21,6 +21,6 @@ if [ -e "$DOMAINS" ]; then
     if [ $AGE -gt 7 ]; then
         echo "WARNING: The cached list is $AGE days old. You might want to generate a new one using 'get_certs.sh' and 'list_domains.sh --update'" 1>&2
     fi
-    cat "$DOMAINS";
+    #cat "$DOMAINS";
 fi
 
