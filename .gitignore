@@ -5,3 +5,5 @@
 .noborg
 crt_list.html
 google_list.json
+failed_logs.txt
+logs.txt
