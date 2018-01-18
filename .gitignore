@@ -3,3 +3,5 @@
 *.list
 *.zip
 .noborg
+crt_list.html
+google_list.json

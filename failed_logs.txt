@@ -1,0 +1,13 @@
+alpha.ctlogs.org/ curl: (6) Could not resolve host: alpha.ctlogs.org
+clicky.ct.letsencrypt.org/ curl: (6) Could not resolve host: clicky.ct.letsencrypt.org
+ct.akamai.com/ jq: parse error: Invalid numeric literal at line 2, column 0
+ct.filippo.io/behindthesofa/ curl: (7) Couldn't connect to server
+ct.izenpe.com/ curl: (28) Connection timed out after 5001 milliseconds
+ct.izenpe.eus/ curl: (28) Connection timed out after 5001 milliseconds
+ctlog2.wosign.com/ curl: (6) Could not resolve host: ctlog2.wosign.com
+ctlog.api.venafi.com/ curl: (6) Could not resolve host: ctlog.api.venafi.com
+ctlog.sheca.com/ curl: (6) Could not resolve host: ctlog.sheca.com
+ct.wosign.com/ curl: (7) Failed to connect to ct.wosign.com port 443: Connection refused
+flimsy.ct.nordu.net:8080/ curl: (7) Failed to connect to flimsy.ct.nordu.net port 8080: Connection refused
+log.certly.io/ curl: (6) Could not resolve host: log.certly.io
+www.certificatetransparency.cn/ct/ curl: (28) Connection timed out after 5000 milliseconds
