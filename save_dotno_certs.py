@@ -32,6 +32,7 @@ gflags.DEFINE_boolean("secure", False,
 def match(certificate, entry_type, extra_data, certificate_index):
     if (certificate_index % FLAGS.countat) == 0:
         print("Certificate index: {}".format(certificate_index))
+        sys.stdout.flush()
 
     try:
         # Check certificate subject names of type DNS for entries
