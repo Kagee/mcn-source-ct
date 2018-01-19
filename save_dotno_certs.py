@@ -28,6 +28,9 @@ gflags.DEFINE_boolean("secure", False,
                       "Wether or not to verify HTTPS");
 
 def match(certificate, entry_type, extra_data, certificate_index):
+    if (certificate_index % 10000) == 0:
+        print("Certificate index: {}".format(certificate_index))
+
     try:
         # Check certificate subject names of type DNS for entries
         # that end in ".no"
