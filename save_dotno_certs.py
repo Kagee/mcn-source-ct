@@ -21,6 +21,8 @@ gflags.DEFINE_integer(
 )
 gflags.DEFINE_integer("startat", 0,
                       "What certificate index to start at. (default 0)")
+gflags.DEFINE_integer("countat", 10000,
+                              "How often to print current certificate index (default 10k)")
 gflags.DEFINE_string("output", None,
                      "Output directory to write certificates to.")
 gflags.DEFINE_string("log", None, "URL of log to scan")
@@ -28,7 +30,7 @@ gflags.DEFINE_boolean("secure", False,
                       "Wether or not to verify HTTPS");
 
 def match(certificate, entry_type, extra_data, certificate_index):
-    if (certificate_index % 10000) == 0:
+    if (certificate_index % FLAGS.countat) == 0:
         print("Certificate index: {}".format(certificate_index))
 
     try:
