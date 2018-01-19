@@ -13,8 +13,8 @@ echo "$LOGS" | while read LOGINFO; do
     URL=$(echo "$LOGINFO" | cut -d ' ' -f 1 | sed -e 's#/$##');
     TREE_SIZE=$(echo "$LOGINFO" | cut -d ' ' -f 2);
     #COUNT_AT="$(echo "(${TREE_SIZE} * 0.09)+10" | bc | cut -d. -f1)"
-    COUNT_AT="$(echo "a=(${TREE_SIZE} * 0.09999); " \
-        "if (a > 1) print a/1 else print 1" | bc)"
+    COUNT_AT="$(echo "a=(${TREE_SIZE} * 0.0999999999999); " \
+        "if (a > 1) print (a/1) else print 1" | bc)"
     WORKDIR="${STORAGE_PATH}/$(echo "$URL" | tr '/' '_')"
     echo "URL: ${URL}, CACHED TREE SIZE: ${TREE_SIZE}, WORKDIR: ${WORKDIR}";
 
@@ -45,9 +45,10 @@ echo "$LOGS" | while read LOGINFO; do
         --startat ${START_AT} \
         --countat ${COUNT_AT} \
         --multi ${THREADS} | tee "${WORKDIR}/last.log" && \
-        grep "Certificate index:" "${WORKDIR}/last.log" | \
+        (N=$(grep "Certificate index:" "${WORKDIR}/last.log" | \
         grep -o -P '\d*' | sort -n | \
-        tail -1 > "${WORKDIR}/last.checked" && \
+        tail -1); echo -e "${N}\n${LAST_MATCH}\n$(cat "${WORKDIR}/last.checked")" | \
+        sort -n | tail -1 > "${WORKDIR}/last.checked");
         echo "LAST_CHECKED: $(cat "${WORKDIR}/last.checked")"
 done
 
