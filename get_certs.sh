@@ -11,14 +11,17 @@ fi
 
 echo "$LOGS" | while read LOGINFO; do
     URL=$(echo "$LOGINFO" | cut -d ' ' -f 1 | sed -e 's#/$##');
-    FOLDER=$(echo "$URL" | tr '/' '_')
     TREE_SIZE=$(echo "$LOGINFO" | cut -d ' ' -f 2);
-    WORKDIR="${STORAGE_PATH}/${FOLDER}"
+    #COUNT_AT="$(echo "(${TREE_SIZE} * 0.09)+10" | bc | cut -d. -f1)"
+    COUNT_AT="$(echo "a=(${TREE_SIZE} * 0.09999); " \
+        "if (a > 1) print a/1 else print 1" | bc)"
+    WORKDIR="${STORAGE_PATH}/$(echo "$URL" | tr '/' '_')"
+    echo "URL: ${URL}, CACHED TREE SIZE: ${TREE_SIZE}, WORKDIR: ${WORKDIR}";
+
     LAST_CHECKED=0
     if [ -f "${WORKDIR}/last.checked" ]; then
         LAST_CHECKED="$(cat "${WORKDIR}/last.checked")"
     fi
-    echo "URL: ${URL}, CACHED TREE SIZE: ${TREE_SIZE}, WORKDIR: ${WORKDIR}";
 
     if [ -d "${WORKDIR}" ]; then
         COUNT="$(find "${WORKDIR}" -name '*.der' | wc -l)"
@@ -27,7 +30,7 @@ echo "$LOGS" | while read LOGINFO; do
         if [ "x${LAST_MATCH}" == "x" ]; then
             LAST_MATCH="0"
         fi
-        START_AT=$(echo -e "${LAST_MATCH}\n${LAST_CHECKED}" | sort | tail -1)
+        START_AT=$(echo -e "${LAST_MATCH}\n${LAST_CHECKED}" | sort -n | tail -1)
         echo "COUNT: ${COUNT}, LAST_MATCH: ${LAST_MATCH}, " \
             "LAST_CHECKED: ${LAST_CHECKED}, START_AT: ${START_AT} " \
             "(of >${TREE_SIZE})"
@@ -40,9 +43,11 @@ echo "$LOGS" | while read LOGINFO; do
         --output "${WORKDIR}/" \
         --log "https://${URL}" \
         --startat ${START_AT} \
-        --multi ${THREADS} | tee "${WORKDIR}/last.log"
-    grep "Certificate index:" "${WORKDIR}/last.log" | \
-        grep 'Certificate index:' | grep -o -P '\d*' | sort | \
-        tail -1 > "${WORKDIR}/last.checked"
+        --countat ${COUNT_AT} \
+        --multi ${THREADS} | tee "${WORKDIR}/last.log" && \
+        grep "Certificate index:" "${WORKDIR}/last.log" | \
+        grep -o -P '\d*' | sort -n | \
+        tail -1 > "${WORKDIR}/last.checked" && \
+        echo "LAST_CHECKED: $(cat "${WORKDIR}/last.checked")"
 done
 
