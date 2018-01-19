@@ -16,7 +16,8 @@ echo "$LOGS" | while read LOGINFO; do
     COUNT_AT="$(echo "a=(${TREE_SIZE} * 0.0999999999999); " \
         "if (a > 1) print (a/1) else print 1" | bc)"
     WORKDIR="${STORAGE_PATH}/$(echo "$URL" | tr '/' '_')"
-    echo "URL: ${URL}, CACHED TREE SIZE: ${TREE_SIZE}, WORKDIR: ${WORKDIR}";
+    echo -e "URL: ${URL}, CACHED TREE SIZE: ${TREE_SIZE}" \
+        "\nCOUNT_AT: ${COUNT_AT}, WORKDIR: ${WORKDIR}";
 
     LAST_CHECKED=0
     if [ -f "${WORKDIR}/last.checked" ]; then
@@ -24,14 +25,14 @@ echo "$LOGS" | while read LOGINFO; do
     fi
 
     if [ -d "${WORKDIR}" ]; then
-        COUNT="$(find "${WORKDIR}" -name '*.der' | wc -l)"
+        PREV_MATCHES="$(find "${WORKDIR}" -name '*.der' | wc -l)"
         LAST_MATCH="$(ls -tr "${WORKDIR}/" | grep -F '.der' | \
             tail -1 | sed -e 's/cert_//' -e 's/\.der//')"
         if [ "x${LAST_MATCH}" == "x" ]; then
             LAST_MATCH="0"
         fi
-        START_AT=$(echo -e "${LAST_MATCH}\n${LAST_CHECKED}" | sort -n | tail -1)
-        echo "COUNT: ${COUNT}, LAST_MATCH: ${LAST_MATCH}, " \
+        START_AT=$(echo -e "0\n${LAST_MATCH}\n${LAST_CHECKED}" | sort -n | tail -1)
+        echo "PREV_MATCHES: ${PREV_MATCHES}, LAST_MATCH: ${LAST_MATCH}, " \
             "LAST_CHECKED: ${LAST_CHECKED}, START_AT: ${START_AT} " \
             "(of >${TREE_SIZE})"
     else
@@ -39,6 +40,7 @@ echo "$LOGS" | while read LOGINFO; do
             "exist, no data downloaded"
         LAST_MATCH="0"
     fi
+    mkdir -p "${WORKDIR}"
     PYTHONPATH=${PYTHON_CT}:${PROTOBUF} $PWD/save_dotno_certs.py \
         --output "${WORKDIR}/" \
         --log "https://${URL}" \
@@ -47,7 +49,7 @@ echo "$LOGS" | while read LOGINFO; do
         --multi ${THREADS} | tee "${WORKDIR}/last.log" && \
         (N=$(grep "Certificate index:" "${WORKDIR}/last.log" | \
         grep -o -P '\d*' | sort -n | \
-        tail -1); echo -e "${N}\n${LAST_MATCH}\n$(cat "${WORKDIR}/last.checked")" | \
+        tail -1); echo -e "0\n${N}\n${LAST_MATCH}\n$(cat "${WORKDIR}/last.checked")" | \
         sort -n | tail -1 > "${WORKDIR}/last.checked");
         echo "LAST_CHECKED: $(cat "${WORKDIR}/last.checked")"
 done
