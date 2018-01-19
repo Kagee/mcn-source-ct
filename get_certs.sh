@@ -10,21 +10,28 @@ else
 fi
 
 echo "$LOGS" | while read LOGINFO; do
-    URL=$(echo "$LOGINFO" | cut -d ' ' -f 1);
+    URL=$(echo "$LOGINFO" | cut -d ' ' -f 1 | sed -e 's#/$##');
     FOLDER=$(echo "$URL" | tr '/' '_')
-    SSL=$(echo "$LOGINFO" | cut -d ' ' -f 2);
-    echo "URL: ${URL}, SSL: ${SSL}";
+    TREE_SIZE=$(echo "$LOGINFO" | cut -d ' ' -f 2);
+    echo "URL: ${URL}, CACHED TREE SIZE: ${TREE_SIZE}, FOLDER: ${FOLDER}";
+
     if [ -d "${STORAGE_PATH}/${FOLDER}" ]; then
-        COUNT=$(find "${STORAGE_PATH}/${FOLDER}" -name '*.der' | wc -l)
-        LAST=$(ls -tr "${STORAGE_PATH}/${FOLDER}/" | grep -F '.der' | tail -1 | sed -e 's/cert_//' -e 's/\.der//')
+        COUNT="$(find "${STORAGE_PATH}/${FOLDER}" -name '*.der' | wc -l)"
+        LAST="$(ls -tr "${STORAGE_PATH}/${FOLDER}/" | grep -F '.der' | \
+            tail -1 | sed -e 's/cert_//' -e 's/\.der//')"
         if [ "x${LAST}" == "x" ]; then
             LAST="0"
         fi
-        echo "COUNT: ${COUNT}, LAST: ${LAST}"
+        echo "COUNT: ${COUNT}, LAST: ${LAST} (of >${TREE_SIZE})"
     else
-        echo "Storage directory ${STORAGE_PATH}/${FOLDER} does not exist, no data downloaded"
+        echo "Storage directory ${STORAGE_PATH}/${FOLDER} does not " \
+            "exist, no data downloaded"
         LAST="0"
     fi
-    PYTHONPATH=${PYTHON_CT}:${PROTOBUF} $PWD/save_dotno_certs.py --output "${STORAGE_PATH}/${FOLDER}/" --log "https://${URL}" --startat ${LAST} --multi ${THREADS}
+    PYTHONPATH=${PYTHON_CT}:${PROTOBUF} $PWD/save_dotno_certs.py \
+        --output "${STORAGE_PATH}/${FOLDER}/" \
+        --log "https://${URL}" \
+        --startat ${LAST} \
+        --multi ${THREADS}
 done
 
