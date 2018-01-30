@@ -9,6 +9,8 @@ else
     LOGS="$(cat logs.txt)"
 fi
 
+find data/ -type f -name 'running'
+
 echo "$LOGS" | while read LOGINFO; do
     URL=$(echo "$LOGINFO" | cut -d ' ' -f 1 | sed -e 's#/$##');
     TREE_SIZE=$(echo "$LOGINFO" | cut -d ' ' -f 2);
@@ -26,8 +28,8 @@ echo "$LOGS" | while read LOGINFO; do
 
     if [ -d "${WORKDIR}" ]; then
         PREV_MATCHES="$(find "${WORKDIR}" -name '*.der' | wc -l)"
-        LAST_MATCH="$(ls -tr "${WORKDIR}/" | grep -F '.der' | \
-            tail -1 | sed -e 's/cert_//' -e 's/\.der//')"
+        LAST_MATCH="$(ls "${WORKDIR}/" | grep -F '.der' | \
+            sed -e 's/cert_//' -e 's/\.der//' | sort -n | tail -1)"
         if [ "x${LAST_MATCH}" == "x" ]; then
             LAST_MATCH="0"
         fi
@@ -41,16 +43,22 @@ echo "$LOGS" | while read LOGINFO; do
         LAST_MATCH="0"
     fi
     mkdir -p "${WORKDIR}"
-    PYTHONPATH=${PYTHON_CT}:${PROTOBUF} $PWD/save_dotno_certs.py \
+    if [ -f "${WORKDIR}/running" ]; then
+      echo "https://${URL} already running, skipping"
+    else
+      echo "$(date)" > "${WORKDIR}/running"
+      PYTHONPATH=${PYTHON_CT}:${PROTOBUF} $PWD/save_dotno_certs.py \
         --output "${WORKDIR}/" \
         --log "https://${URL}" \
         --startat ${START_AT} \
         --countat ${COUNT_AT} \
         --multi ${THREADS} | tee "${WORKDIR}/last.log" && \
         (N=$(grep "Certificate index:" "${WORKDIR}/last.log" | \
-        grep -o -P '\d*' | sort -n | \
+        grep -o -P 'Certificate index: \d*' | grep -o -P '\d*' | sort -n | \
         tail -1); echo -e "0\n${N}\n${LAST_MATCH}\n$(cat "${WORKDIR}/last.checked")" | \
         sort -n | tail -1 > "${WORKDIR}/last.checked");
+        rm "${WORKDIR}/running"
         echo "LAST_CHECKED: $(cat "${WORKDIR}/last.checked")"
+    fi
 done
 
