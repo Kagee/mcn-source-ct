@@ -69,7 +69,7 @@ cat "$TMP" | cut -f 1 | sort | uniq | \
     do
         HEAD="https://${URL}ct/v1/get-sth"
         #echo $HEAD
-        CURL_OPTS="--connect-timeout 5 --max-time 30 --insecure"
+        CURL_OPTS="--connect-timeout 15 --max-time 30 --insecure"
         OUTPUT=$(curl $CURL_OPTS -sSo - "$HEAD" 2>&1);
         RC=$?;
         if [ $RC -gt 0 ]; then
