@@ -1,7 +1,8 @@
 #! /bin/bash
+SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# This way we can work with realtive paths in the rest of the script
+cd "${SOURCE_DIR}"
 source config.sh
-PROTOBUF="$CT_PATH/protobuf/python"
-PYTHON_CT="$CT_PATH/certificate-transparency/python"
 
 if [ "x$1" != "x" ]; then
     LOGS="$(echo $1)"
