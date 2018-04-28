@@ -13,7 +13,7 @@ else
     exit 1
 fi
 
-find data/ -type f -name 'running'
+# find data/ -type f -name 'running'
 
 echo "$LOGS" | while read LOGINFO; do
     URL=$(echo "$LOGINFO" | cut -d ' ' -f 1 | sed -e 's#/$##');
@@ -29,7 +29,7 @@ echo "$LOGS" | while read LOGINFO; do
     if [ -f "${WORKDIR}/last.checked" ]; then
         LAST_CHECKED="$(cat "${WORKDIR}/last.checked")"
     fi
-
+    START_AT=0
     if [ -d "${WORKDIR}" ]; then
         PREV_MATCHES="$(find "${WORKDIR}" -name '*.der' | wc -l)"
         LAST_MATCH="$(ls "${WORKDIR}/" | grep -F '.der' | \
@@ -37,7 +37,7 @@ echo "$LOGS" | while read LOGINFO; do
         if [ "x${LAST_MATCH}" == "x" ]; then
             LAST_MATCH="0"
         fi
-        START_AT=$(echo -e "0\n${LAST_MATCH}\n${LAST_CHECKED}" | sort -n | tail -1)
+        START_AT=$(echo -e "${START_AT}\n${LAST_MATCH}\n${LAST_CHECKED}" | sort -n | tail -1)
         echo "PREV_MATCHES: ${PREV_MATCHES}, LAST_MATCH: ${LAST_MATCH}, " \
             "LAST_CHECKED: ${LAST_CHECKED}, START_AT: ${START_AT} " \
             "(of >${TREE_SIZE})"
