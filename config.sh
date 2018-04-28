@@ -5,4 +5,8 @@ source "$HOME/.mcn.conf"
 STORAGE_PATH="$PWD/data"
 THREADS="$(nproc --ignore 1)"
 
+PROTOBUF="$CT_PATH/protobuf/python"
+PYTHON_CT="$CT_PATH/certificate-transparency/python"
+
+
 DOMAINS="mcn-source-ct.list"
