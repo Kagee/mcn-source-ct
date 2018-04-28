@@ -6,7 +6,7 @@ cd "${SOURCE_DIR}"
 source config.sh
 
 # This script will dowload a list of all CT logs that Google
-# and crt.sh mentions. It will then attempt to the the 
+# and crt.sh mentions. It will then attempt to get the the 
 # tree_size of the logs. If this fails, the bare URL of
 # the log will be written to FAILED_LOGS followed by a
 # error message. If it works, the bare URL followed
