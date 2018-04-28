@@ -8,5 +8,6 @@ Scripts for downloading and extracting .no domains from certificate transparency
 2. Install ABSL: sudo pip2 install absl-py•
 3. build python protobuf bindings? in ct/protobuf/python using "python setup.py build"
 4. Set relevant paths in config.sh
-5. Get certificates using get_certs.sh
-6. List uniqe .no-domains using list_domains.sh
+5. Run patch_disable_https_verify.sh to patch out HTTPS verification
+6. Get certificates using get_certs.sh
+7. List uniqe .no-domains using list_domains.sh
