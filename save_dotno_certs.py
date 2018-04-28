@@ -2,7 +2,7 @@
 # Based on /ct/certificate-transparency/python/ct/client/tools/simple_scan.py
 import requests
 
-requests.packages.urllib3.disable_warnings()
+#requests.packages.urllib3.disable_warnings()
 
 
 import os
