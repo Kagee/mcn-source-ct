@@ -6,7 +6,10 @@ PYTHON_CT="$CT_PATH/certificate-transparency/python"
 if [ "x$1" != "x" ]; then
     LOGS="$(echo $1)"
 else
-    LOGS="$(cat logs.txt)"
+    #LOGS="$(cat logs.txt)"
+    echo "Supply a log to download as argument "\
+         "(you probably don't want to download all of them)."
+    exit 1
 fi
 
 find data/ -type f -name 'running'
