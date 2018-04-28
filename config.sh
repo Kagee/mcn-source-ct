@@ -1,7 +1,8 @@
-CT_PATH="$HOME/ct"
-STORAGE_PATH="$PWD/data"
-THREADS=8
+#! /bin/bash
+# MCN_TOOLS have moved to system config file
+source "$HOME/.mcn.conf"
 
-MCN_TOOLS="/home/hildenae/Documents/Kildekode/mcn/mcn-tools"
+STORAGE_PATH="$PWD/data"
+THREADS="$(nproc --ignore 1)"
 
 DOMAINS="mcn-source-ct.list"
