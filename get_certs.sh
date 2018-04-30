@@ -50,7 +50,7 @@ echo "$LOGS" | while read LOGINFO; do
     if [ -f "${WORKDIR}/running" ]; then
       echo "https://${URL} already running, skipping"
     else
-      echo "$(date)" > "${WORKDIR}/running"
+      echo "P $$ $(date)" > "${WORKDIR}/running"
       PYTHONPATH=${PYTHON_CT}:${PROTOBUF} $PWD/save_dotno_certs.py \
         --output "${WORKDIR}/" \
         --log "https://${URL}" \
