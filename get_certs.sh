@@ -15,7 +15,7 @@ fi
 
 # find data/ -type f -name 'running'
 
-echo "$LOGS" | while read LOGINFO; do
+echo "$LOGS" | sort -R | while read LOGINFO; do
     URL=$(echo "$LOGINFO" | cut -d ' ' -f 1 | sed -e 's#/$##');
     TREE_SIZE=$(echo "$LOGINFO" | cut -d ' ' -f 2);
     #COUNT_AT="$(echo "(${TREE_SIZE} * 0.09)+10" | bc | cut -d. -f1)"
@@ -50,7 +50,7 @@ echo "$LOGS" | while read LOGINFO; do
     if [ -f "${WORKDIR}/running" ]; then
       echo "https://${URL} already running, skipping"
     else
-      echo "P $$ $(date)" > "${WORKDIR}/running"
+      echo "R $$ $(date --iso=m | grep -o -E '..-..T..:..')" > "${WORKDIR}/running"
       PYTHONPATH=${PYTHON_CT}:${PROTOBUF} $PWD/save_dotno_certs.py \
         --output "${WORKDIR}/" \
         --log "https://${URL}" \

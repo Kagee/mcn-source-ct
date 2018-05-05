@@ -3,12 +3,14 @@ SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # This way we can work with realtive paths in the rest of the script
 cd "${SOURCE_DIR}"
 source config.sh
-#PROTOBUF="$CT_PATH/protobuf/python"
-#PYTHON_CT="$CT_PATH/certificate-transparency/python"
 
 (LOGS="$(cat logs.txt)"
-
-echo "#CRT LAST_MATCH LAST_CHECKED TREE_SIZE DIFF % R TS_LC URL"
+SORT=$1
+if [ "x$SORT" = "x" ]; then 
+ SORT=4;
+fi
+#echo "#CRT LAST_MATCH LAST_CHECKED TREE_SIZE DIFF % R TS_LC URL"
+echo "#CRT TREE_SIZE DIFF % R TS_LC URL"
 
 echo "$LOGS" | while read LOGINFO; do
     URL=$(echo "$LOGINFO" | cut -d ' ' -f 1 | sed -e 's#/$##');
@@ -23,9 +25,12 @@ echo "$LOGS" | while read LOGINFO; do
         RUNNING=" "
         if [ -f "${WORKDIR}/running" ]; then
           RUNNING="$(cat "${WORKDIR}/running" | cut -c1)"
+	  if [ "$RUNNING" = "R" ]; then
+		RUNNING="$(cat "${WORKDIR}/running" | awk '{ print $3}')"
+	  fi
         fi
         TS_LC="0000-00-00-00-00"
-        TS_LC="$(stat -c %y "${WORKDIR}/last.log" | cut -d- -f 2,3 | cut -d: -f1,2 | tr '[ :]' '-')"
+        TS_LC="$(stat -c %y "${WORKDIR}/last.log" | cut -d- -f 2,3 | cut -d: -f1,2 | tr '[ ]' 'T')"
         LAST_CHECKED=0
         if [ -f "${WORKDIR}/last.checked" ]; then
             LAST_CHECKED="$(cat "${WORKDIR}/last.checked")"
@@ -46,7 +51,8 @@ echo "$LOGS" | while read LOGINFO; do
             P="0.00"
         fi
         if [ ${TREE_SIZE} -gt 10 ]; then
-            echo "${PREV_MATCHES} ${LAST_MATCH} ${LAST_CHECKED} ${TREE_SIZE} ${DIFF} ${P}% ${RUNNING} ${TS_LC} ${URL}"
+            #echo "${PREV_MATCHES} ${LAST_MATCH} ${LAST_CHECKED} ${TREE_SIZE} ${DIFF} ${P}% ${RUNNING} ${TS_LC} ${URL}"
+	    echo "${PREV_MATCHES} ${TREE_SIZE} ${DIFF} ${P}% ${RUNNING} ${TS_LC} ${URL}"
         fi
         #(N=$(grep "Certificate index:" "${WORKDIR}/last.log" | \
         #grep -o -P '\d*' | sort -n | \
@@ -54,6 +60,9 @@ echo "$LOGS" | while read LOGINFO; do
         #sort -n | tail -1 > "${WORKDIR}/last.checked");
         #echo "LAST_CHECKED: $(cat "${WORKDIR}/last.checked")"
     fi
-done | sort -t ' ' -n -k 6 -k 4 -k 5;
-echo "#CRT LAST_MATCH LAST_CHECKED TREE_SIZE DIFF % R TS_LC URL"
+done | sort -t ' ' -n -k $SORT -k 4 -k 5;
+# done | sort -t ' ' -n -k 6 -k 4 -k 5;
+#echo "#CRT LAST_MATCH LAST_CHECKED TREE_SIZE DIFF % R TS_LC URL"
+echo "#CRT TREE_SIZE DIFF % R TS_LC URL"
+
 ) | column -t
