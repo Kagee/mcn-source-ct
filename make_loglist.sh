@@ -22,7 +22,7 @@ TMP="./logs.tmp"
 LOGS="./logs.txt"
 FAILED_LOGS="./failed_logs.txt"
 
-rm "$TMP" "$LOGS" "$FAILED_LOGS" 2>/dev/null
+rm "$TMP" "$FAILED_LOGS" 2>/dev/null
 
 if [ ! -f "${GOOGLE}" ]; then
     wget -q -O "$GOOGLE" https://www.gstatic.com/ct/log_list/all_logs_list.json
@@ -64,27 +64,35 @@ if [ '--compare' == "$1" ]; then
     cat "$TMP" | cut -f 1 | sort | uniq -c | sort; exit
 fi
 
+rm tmp/*.logstatus 2>/dev/null
 cat "$TMP" | cut -f 1 | sort | uniq | \
     while read URL;
     do
-        HEAD="https://${URL}ct/v1/get-sth"
-        #echo $HEAD
-        CURL_OPTS="--connect-timeout 15 --max-time 30 --insecure"
-        OUTPUT=$(curl $CURL_OPTS -sSo - "$HEAD" 2>&1);
-        RC=$?;
-        if [ $RC -gt 0 ]; then
-            echo "[FAIL] ${URL} failed: $(echo $OUTPUT | tr -d '\n')";
-            echo "${URL} $(echo $OUTPUT | tr -d '\n')" >> "${FAILED_LOGS}";
-        else
-            TS=$(echo "$OUTPUT" | jq -r '.tree_size' 2>&1)
+        #test "$(jobs | wc -l)" -ge 8 && wait -n || true
+        (
+	    HEAD="https://${URL}ct/v1/get-sth";
+            echo $BASH_SUBSHELL $BASHPID $HEAD;
+            CURL_OPTS="--connect-timeout 15 --max-time 30 --insecure"
+            OUTPUT=$(curl $CURL_OPTS -sSo - "$HEAD" 2>&1);
             RC=$?;
             if [ $RC -gt 0 ]; then
-                echo "[FAIL] ${URL} failed: jq: $(echo $TS | tr -d '\n')";
-                echo "${URL} jq: $(echo $TS | tr -d '\n')" >> "${FAILED_LOGS}";
+                echo "[FAIL] ${URL} $(echo $OUTPUT | tr -d '\n')" >> "tmp/$$-${BASHPID}.logstatus";
+		echo "[FAIL] ${URL} $(echo $OUTPUT | tr -d '\n')"
             else
-                echo "[OK] ${URL} ${TS}";
-                echo "${URL} ${TS}" >> "${LOGS}"
+                TS=$(echo "$OUTPUT" | jq -r '.tree_size' 2>&1)
+                RC=$?;
+                if [ $RC -gt 0 ]; then
+                    echo "[FAIL] ${URL} jq: $(echo $TS | tr -d '\n')" >> "tmp/$$-${BASHPID}.logstatus";
+		    echo "[FAIL] ${URL} jq: $(echo $TS | tr -d '\n')"
+                else
+                    echo "[OK] ${URL} ${TS}" >> "tmp/$$-${BASHPID}.logstatus"
+		    echo "[OK] ${URL} ${TS}"
+                fi
             fi
-        fi
-    done;
+
+	)
+    done
+wait
+echo "wait done"
+cat tmp/*.logstatus | awk '/^\[OK\]/{ print $2" "$3 }' > "$LOGS"
 rm "$TMP" 2>/dev/null
