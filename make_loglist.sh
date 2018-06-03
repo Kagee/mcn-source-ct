@@ -65,34 +65,31 @@ if [ '--compare' == "$1" ]; then
 fi
 
 rm tmp/*.logstatus 2>/dev/null
-cat "$TMP" | cut -f 1 | sort | uniq | \
-    while read URL;
-    do
-        #test "$(jobs | wc -l)" -ge 8 && wait -n || true
-        (
-	    HEAD="https://${URL}ct/v1/get-sth";
-            echo $BASH_SUBSHELL $BASHPID $HEAD;
-            CURL_OPTS="--connect-timeout 15 --max-time 30 --insecure"
-            OUTPUT=$(curl $CURL_OPTS -sSo - "$HEAD" 2>&1);
-            RC=$?;
-            if [ $RC -gt 0 ]; then
-                echo "[FAIL] ${URL} $(echo $OUTPUT | tr -d '\n')" >> "tmp/$$-${BASHPID}.logstatus";
-		echo "[FAIL] ${URL} $(echo $OUTPUT | tr -d '\n')"
-            else
-                TS=$(echo "$OUTPUT" | jq -r '.tree_size' 2>&1)
-                RC=$?;
-                if [ $RC -gt 0 ]; then
-                    echo "[FAIL] ${URL} jq: $(echo $TS | tr -d '\n')" >> "tmp/$$-${BASHPID}.logstatus";
-		    echo "[FAIL] ${URL} jq: $(echo $TS | tr -d '\n')"
-                else
-                    echo "[OK] ${URL} ${TS}" >> "tmp/$$-${BASHPID}.logstatus"
-		    echo "[OK] ${URL} ${TS}"
-                fi
-            fi
 
-	)
-    done
-wait
-echo "wait done"
+function test_log {
+  JOB_NUMBER="$1"
+  URL="$2"
+
+  HEAD="https://${URL}ct/v1/get-sth";
+  CURL_OPTS="--max-time 15 --insecure"
+  OUTPUT=$(curl $CURL_OPTS -sSo - "$HEAD" 2>&1);
+  RC=$?;
+  if [ $RC -gt 0 ]; then
+    echo "[FAIL] ${URL} $(echo $OUTPUT | tr -d '\n')" >> "tmp/$JOB_NUMBER.logstatus";
+  else
+    TS=$(echo "$OUTPUT" | jq -r '.tree_size' 2>&1)
+    RC=$?;
+    if [ $RC -gt 0 ]; then
+      echo "[FAIL] ${URL} jq: $(echo $TS | tr -d '\n')" >> "tmp/$JOB_NUMBER.logstatus";
+    else
+      echo "[OK] ${URL} ${TS}" >> "tmp/$JOB_NUMBER.logstatus"
+    fi
+  fi
+}
+
+export -f test_log
+
+cut -f 1 "$TMP" | sort | uniq | parallel -P "$(echo "$(nproc --all) * 2" | bc)" test_log '{#}' '{}'
+
 cat tmp/*.logstatus | awk '/^\[OK\]/{ print $2" "$3 }' > "$LOGS"
 rm "$TMP" 2>/dev/null
