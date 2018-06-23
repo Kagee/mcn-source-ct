@@ -12,7 +12,9 @@ if [ "x$1" != "x" ] && [ "x$2" != "x" ] && [ "$1" -le "$2" ] && [ "x$3" != "x"  
    select_logs "$1" "$2" | sort -k 2 -n 
 elif [ "x$1" != "x" ] && [ "x$2" != "x" ] && [ "$1" -le "$2" ]; then
    select_logs "$1" "$2" | while read LOG; 
-	do ./get_certs.sh "$LOG"; 
+  do 
+    #./get_certs.sh "$LOG"; 
+    ./go-test.sh download_log "$LOG"
    done
 else
     echo 'Missing $1 or $2, or $2 was smaller than $1' 1>&2
