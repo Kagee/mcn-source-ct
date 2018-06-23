@@ -3,6 +3,7 @@
 source "$HOME/.mcn.conf"
 
 STORAGE_PATH="$PWD/data"
+CACHE_PATH="$PWD/cache"
 THREADS="$(nproc --ignore 1)"
 
 PROTOBUF="$CT_PATH/protobuf/python"
