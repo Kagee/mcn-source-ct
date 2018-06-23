@@ -65,8 +65,12 @@ def run():
     if not FLAGS.log:
         raise Exception("Log to scan must be specified.")
 
-    res = scanner.scan_log(match, FLAGS.log, FLAGS.multi,
-                           write_matched_certificate, FLAGS.startat)
+    res = scanner.scan_log(match_callback=match,
+                            log_url=FLAGS.log,
+                            total_processes=FLAGS.multi,
+                            matcher_output_handler=write_matched_certificate,
+                            start_entry=FLAGS.startat,
+                            )
 
     print "Scanned %d, %d matched and %d failed strict or partial parsing" % (
         res.total, res.matches, res.errors)
