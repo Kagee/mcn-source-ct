@@ -11,3 +11,4 @@ failed_logs.txt
 logs.txt
 data/
 tmp/
+cache/
