@@ -17,6 +17,7 @@ LOGS="$(cat logs.txt | grep -v -E 'ct.gdca.com.cn|ctserver.cnnic.cn|ct.sheca.com
 #2018/06/22 18:57:28 Get https://ct.sheca.com/ct/v1/get-entries?end=2&start=0: x509: certificate signed by unknown authority
 
 # TODo: make global logfile (per log?). Add timestamp to log-funcs
+# grep Index=xxx and save at top og se-file (allows verification)(save after .nos extracted)
 STEP=999
 
 function url_to_safe {
@@ -140,7 +141,16 @@ function do_whole_log {
   rm "$ATOM"
 }
 
+function dev {
+  echo "$1 - $2 - $3"
+  echo "$LOG_URI"
+}
+
 case "$1" in
+  dev)
+    LOG_URI="FOOBAR"
+    dev "$@"
+    ;;
   size)
     get_size "$2"
     ;;
@@ -151,7 +161,8 @@ case "$1" in
     logs
     ;;
   download_log)
-    do_whole_log $2
+    TIMESTAMP="$(date +%F-%T | tr ':' '-')"
+    do_whole_log $2 2>&1 | tee "$CACHE_PATH/$(url_to_safe "$2")-$TIMESTAMP.log"
   ;;
   count)
     find cache/ -type f -name '*.xz' -exec xzcat {} \; | ../mcn-tools/default_extract
