@@ -16,8 +16,6 @@ LOGS="$(cat logs.txt | grep -v -E 'ct.gdca.com.cn|ctserver.cnnic.cn|ct.sheca.com
 # 2018/06/22 18:57:27 Get https://ctserver.cnnic.cn/ct/v1/get-entries?end=2&start=0: x509: certificate signed by unknown authority
 #2018/06/22 18:57:28 Get https://ct.sheca.com/ct/v1/get-entries?end=2&start=0: x509: certificate signed by unknown authority
 
-# TODo: make global logfile (per log?). Add timestamp to log-funcs
-# grep Index=xxx and save at top og se-file (allows verification)(save after .nos extracted)
 STEP=999
 
 function url_to_safe {
@@ -56,7 +54,7 @@ function get_from {
   FIRST="${3:-}"
   #set -x
   LAST="$(echo "$FIRST + $STEP" | bc)"
-  INFO "first: $FIRST last: $LAST size: $SIZE. [$ME/${FUNCNAME[0]}]"
+  INFO "First: $FIRST Last: $LAST Size: $SIZE. [$ME/${FUNCNAME[0]}]"
   if ! [ $FIRST -lt $SIZE ]; then
     ERROR "first ($FIRST) is greater than size ($SIZE) of log $LOG_URI. [$ME/${FUNCNAME[0]}]"
     exit 2
@@ -74,20 +72,28 @@ function get_from {
   if [ $RC -ne 0 ]; then
     mv "$TMP1" "$TMP1.error"
     rm "$TMP2"
-    ERROR "Last get from $LOG_URI terminated with exit code $RC. See $TMP1.error for details."
+    ERROR "Last get from $LOG_URI terminated with exit code $RC."
+    cat "$TMP1.error" 1>&2
     exit 1
+  #else
+  #  INFO "$RC"
   fi
+  ERROR_COUNT="$(grep -c -F '[ERROR]' "$TMP1")"
+  INFO "$ERROR_COUNT failed processing"
+  grep -F '[ERROR]' "$TMP1" 1>&2
   LAST="$(cat "$TMP1" | grep -P '^Index=' | tail -1 | awk '{ print $1}' | sed -e 's/Index=//')"
-  cat "$TMP1" | grep -a -F '.no' | xz --compress --stdout > "$TMP2"
+  cat "$TMP1" | grep -a -F '.no' > "$TMP2"
+  cat "$TMP1" | grep -a -F 'Index=' >> "$TMP2"
+  cat "$TMP2" | xz --compress --stdout > "$TMP1"
 
   PLAST="$(printf "%011d" $LAST)"
   OUTPUT_FILE="$PFIRST-$PLAST.xz"
   PREFIX="$(echo "$OUTPUT_FILE" | md5sum | cut -c 1,2)"
   OUTPUT_PREFIX="$CACHE_PATH/se_$(url_to_safe "$LOG_URI")/${PREFIX}"
   mkdir -p "$OUTPUT_PREFIX"
-  mv "$TMP2" "$OUTPUT_PREFIX/$OUTPUT_FILE"
+  mv "$TMP1" "$OUTPUT_PREFIX/$OUTPUT_FILE"
   echo "$LAST" > "$CACHE_PATH/se_$(url_to_safe "$LOG_URI")/last"
-  rm "$TMP1"
+  rm "$TMP2"
 }
 
 function do_whole_log {
@@ -155,19 +161,19 @@ case "$1" in
     get_size "$2"
     ;;
   from)
-    get_from "$2" "$3" "$4"
+    get_from "$2" "$3" "$4" 2>&1 | tee "$CACHE_PATH/$(url_to_safe "$2")-$TIMESTAMP.log"
     ;;
   logs)
     logs
     ;;
   download_log)
     TIMESTAMP="$(date +%F-%T | tr ':' '-')"
-    do_whole_log $2 2>&1 | tee "$CACHE_PATH/$(url_to_safe "$2")-$TIMESTAMP.log"
+    do_whole_log "$2" 2>&1 | tee "$CACHE_PATH/$(url_to_safe "$2")-$TIMESTAMP.log"
   ;;
   count)
     find cache/ -type f -name '*.xz' -exec xzcat {} \; | ../mcn-tools/default_extract
   ;;
   *)
-    echo $"Usage: $0 {logs|size <log>|download_log <log>|from <log> <from>"
+    echo $"Usage: $0 {dev|logs|size <log>|download_log <log>|from <log> <size> <from>"
     exit 1
 esac
