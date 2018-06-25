@@ -5,10 +5,15 @@ cd "${SOURCE_DIR}"
 source config.sh
 
 function select_logs {
-  cat logs.txt | grep -P " \d{${1},${2}}$"
+  cat logs.txt | grep -P " \d{${1},${2}}$" | awk '{print $1}'
 }
 
-if [ "x$1" != "x" ] && [ "x$2" != "x" ] && [ "$1" -le "$2" ] && [ "x$3" != "x"  ]; then 
+if [ "x$1" != "x" ] && [ "x$2" != "x" ] && [ "$1" -le "$2" ] && [ "x$3" = "xv"  ]; then
+   select_logs "$1" "$2" | while read LOG;
+ do
+   ./go-test.sh verify "$LOG"
+ done
+elif [ "x$1" != "x" ] && [ "x$2" != "x" ] && [ "$1" -le "$2" ] && [ "x$3" != "x"  ]; then
    select_logs "$1" "$2" | sort -k 2 -n 
 elif [ "x$1" != "x" ] && [ "x$2" != "x" ] && [ "$1" -le "$2" ]; then
    select_logs "$1" "$2" | while read LOG; 

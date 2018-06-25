@@ -152,6 +152,24 @@ function dev {
   echo "$LOG_URI"
 }
 
+function verify {
+  LOG_URI="$1"
+  OUTPUT_PREFIX="$CACHE_PATH/se_$(url_to_safe "$LOG_URI")/"
+  NUMBERS="$(find "$OUTPUT_PREFIX" -name '*.xz' -exec xzcat {} \; | grep 'Index=' | \
+    sed -e 's/Index=//' | awk '{print $1}' | sort -n | uniq)"
+  INFO "Number of certs checked in $LOG_URI: $(echo "$NUMBERS" | wc -l) [$ME/${FUNCNAME[0]}]"
+  #MISSING="$(echo "$NUMBERS" | grep -v -P '17..|13..' | awk '$1!=p+1{print p+1"-"$1-1}{p=$1}')"
+  MISSING="$(echo "$NUMBERS" | awk '$1!=p+1{print p+1"-"$1-1}{p=$1}')"
+  if [ -n "$MISSING" ]; then
+    MISSING_COUNT="$(echo "$MISSING" | wc -l)"
+    INFO "Number of missing sequences in $LOG_URI: $MISSING_COUNT [$ME/${FUNCNAME[0]}]"
+    echo "$MISSING" | sed -e 's/^/[INFO]  /' 1>&2
+  else
+    INFO "No missing sequences in $LOG_URI [$ME/${FUNCNAME[0]}]"
+  fi
+}
+
+TIMESTAMP="$(date +%F-%T | tr ':' '-')"
 case "$1" in
   dev)
     LOG_URI="FOOBAR"
@@ -170,6 +188,9 @@ case "$1" in
     TIMESTAMP="$(date +%F-%T | tr ':' '-')"
     do_whole_log "$2" 2>&1 | tee "$CACHE_PATH/$(url_to_safe "$2")-$TIMESTAMP.log"
   ;;
+  verify)
+    verify "$2"
+    ;;
   count)
     find cache/ -type f -name '*.xz' -exec xzcat {} \; | ../mcn-tools/default_extract
   ;;
